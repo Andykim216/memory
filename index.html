@@ -49,15 +49,15 @@
 
         @keyframes backgroundChange {
             0% {
-                background-image: url('./images/background1.jpg');
+                background-image: url('/memory/images/background1.jpg');
             }
 
             50% {
-                background-image: url('./images/background2.jpg');
+                background-image: url('/memory/images/background2.jpg');
             }
 
             100% {
-                background-image: url('./images/background1.jpg');
+                background-image: url('/memory/images/background1.jpg');
             }
         }
 
@@ -122,15 +122,14 @@
             <!-- 카드들 -->
             <div class="col" id="card-static-1">
                 <div class="card h-100">
-                    <img src="./images/20240919.jpg" class="card-img-top" alt="앨범 이미지">
+                    <img src="/memory/images/20240919.jpg" class="card-img-top" alt="앨범 이미지">
                     <div class="card-body">
                         <h5 class="card-title">앨범 제목</h5>
                         <p class="card-text">앨범 내용</p>
                     </div>
                     <div class="card-footer">
                         <small class="text-body-secondary">앨범 날짜</small>
-                        <button class="btn btn-danger btn-sm float-end"
-                            onclick="$('#card-static-1').remove();">삭제</button>
+                        <button class="btn btn-danger btn-sm float-end" onclick="$('#card-static-1').remove();">삭제</button>
                     </div>
                 </div>
             </div>
@@ -191,6 +190,51 @@
             $("#savebtn").click(function () {
                 $('#postingbox').toggle();
             });
+
+            // 미세먼지 및 날씨 데이터 가져오기
+            let weatherApiKey = 'YOUR_API_KEY'; // 여기에 OpenWeather API 키를 입력하세요.
+            let weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=Seoul&appid=${weatherApiKey}&units=metric&lang=kr`;
+
+            fetch(weatherUrl)
+                .then(res => res.json())
+                .then(data => {
+                    let temp = data['main']['temp'];
+                    $('#temperature').text(temp);
+                })
+                .catch(error => {
+                    console.error("Weather API Error:", error);
+                });
+
+            let airUrl = `https://api.openweathermap.org/data/2.5/air_pollution?lat=37.5665&lon=126.9780&appid=${weatherApiKey}`;
+            fetch(airUrl)
+                .then(res => res.json())
+                .then(data => {
+                    let aqi = data['list'][0]['main']['aqi'];
+                    let mise = '';
+                    switch (aqi) {
+                        case 1:
+                            mise = '좋음';
+                            break;
+                        case 2:
+                            mise = '보통';
+                            break;
+                        case 3:
+                            mise = '나쁨';
+                            break;
+                        case 4:
+                            mise = '매우 나쁨';
+                            break;
+                        case 5:
+                            mise = '위험';
+                            break;
+                        default:
+                            mise = '정보 없음';
+                    }
+                    $('#msg').text(mise);
+                })
+                .catch(error => {
+                    console.error("Air Quality API Error:", error);
+                });
 
             let docs = await getDocs(collection(db, "albums"));
             docs.forEach((docSnap) => {
